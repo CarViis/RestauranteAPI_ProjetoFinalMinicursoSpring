@@ -7,8 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,11 +29,16 @@ public class FoodController {
         return new ResponseEntity<List<Food>>(foods, HttpStatus.OK);
     }
     @DeleteMapping("/delete")
-    public void deleteFood(Long id){
-        foodService.deleteFood(id);
+    public ResponseEntity<Food> deleteFood(Long id){
+        boolean deleted = foodService.deleteFood(id);
+        if (deleted) {
+            return new ResponseEntity<Food>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<Food>(HttpStatus.NOT_FOUND);
+        }
     }
     @PostMapping("/save")
-    public ResponseEntity<Food> saveFood(Food food){
+    public ResponseEntity<Food> saveFood(@RequestBody Food food){
         try {
             Food savedFood = foodService.saveFood(food);
             if (savedFood == null) {
@@ -44,8 +51,12 @@ public class FoodController {
         }
     }
     @PutMapping("/update")
-    public void updateFood(Long id, String title, double price, String image){
-        foodService.updateFood(id, title, price, image);
+    public ResponseEntity<Food> updateFood(@RequestBody Food food){
+        try {
+            Food updatedFood = foodService.updateFood(food.getId(), food.getTitle(), food.getPrice(), food.getImage());
+            return new ResponseEntity<Food>(updatedFood, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<Food>(HttpStatus.NOT_FOUND);
+        }
     }
-
 }
